@@ -1,30 +1,115 @@
-# Anime review website
+# AnimeReview
 
-*Automatically synced with your [v0.dev](https://v0.dev) deployments*
+これは、Next.js, shadcn/ui, Prisma, PostgreSQL を使用して構築されたアニメレビューサイトのサンプルアプリケーションです。
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/yoshiki-matsumura/v0-anime-review-website)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.dev-black?style=for-the-badge)](https://v0.dev/chat/projects/jm8iQlK9SX0)
+## 概要
 
-## Overview
+v0.devで作成されたモックUIをベースに、Docker上で動作するデータベース連携アプリケーションとして開発されました。ユーザーはアニメのタイトルを閲覧し、レビューを読んだり投稿したりすることができます。
 
-This repository will stay in sync with your deployed chats on [v0.dev](https://v0.dev).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.dev](https://v0.dev).
+## 技術スタック
 
-## Deployment
+-   **フレームワーク**: Next.js (App Router)
+-   **UI**: React, TypeScript, shadcn/ui, Tailwind CSS
+-   **ORM**: Prisma
+-   **データベース**: PostgreSQL
+-   **コンテナ**: Docker, Docker Compose
 
-Your project is live at:
+## セットアップ手順
 
-**[https://vercel.com/yoshiki-matsumura/v0-anime-review-website](https://vercel.com/yoshiki-matsumura/v0-anime-review-website)**
+### 前提条件
 
-## Build your app
+-   [Docker](https://www.docker.com/get-started) と [Docker Compose](https://docs.docker.com/compose/install/) がインストールされていること。
+-   [Node.js](https://nodejs.org/ja) (v20.x or later) と [pnpm](https://pnpm.io/ja/installation) がインストールされていること。
 
-Continue building your app on:
+### インストールと起動
 
-**[https://v0.dev/chat/projects/jm8iQlK9SX0](https://v0.dev/chat/projects/jm8iQlK9SX0)**
+1.  **リポジトリをクローン**
 
-## How It Works
+    ```bash
+    git clone https://github.com/omatsuman69/AnimeReview.git
+    cd AnimeReview
+    ```
 
-1. Create and modify your project using [v0.dev](https://v0.dev)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+2.  **依存関係をインストール**
+
+    ```bash
+    pnpm install
+    ```
+
+3.  **環境変数を設定**
+
+    `.env.example` ファイルをコピーして `.env` ファイルを作成します。（このプロジェクトでは `prisma init` で自動生成済みです）
+    `.env` ファイルには、データベース接続用のURLが以下のように設定されています。
+
+    ```
+    DATABASE_URL="postgresql://postgres:password@localhost:5432/animereview?schema=public"
+    ```
+
+4.  **Dockerコンテナを起動**
+
+    以下のコマンドを実行して、Next.jsアプリケーションとPostgreSQLデータベースのコンテナをバックグラウンドで起動します。
+
+    ```bash
+    docker-compose up -d --build
+    ```
+
+    初回起動時は、Dockerイメージのダウンロードとビルドに数分かかることがあります。
+
+5.  **データベースマイグレーション**
+
+    コンテナが起動したら、Prismaを使ってデータベースにテーブルを作成します。
+
+    ```bash
+    pnpm exec prisma migrate dev
+    ```
+
+6.  **初期データを投入**
+
+    動作確認のために、ダミーデータをデータベースに投入します。
+
+    ```bash
+    pnpm exec prisma db seed
+    ```
+
+7.  **アプリケーションにアクセス**
+
+    ブラウザで `http://localhost:3000` を開きます。
+
+## APIエンドポイント
+
+### 全アニメタイトルを取得
+
+-   **Method**: `GET`
+-   **Endpoint**: `/api/anime`
+-   **cURL サンプル**:
+    ```bash
+    curl http://localhost:3000/api/anime
+    ```
+
+### 特定タイトルのレビューを取得
+
+-   **Method**: `GET`
+-   **Endpoint**: `/api/anime/{id}/reviews`
+-   **cURL サンプル** (ID: 1 の場合):
+    ```bash
+    curl http://localhost:3000/api/anime/1/reviews
+    ```
+
+### レビューを投稿
+
+-   **Method**: `POST`
+-   **Endpoint**: `/api/anime/{id}/reviews`
+-   **cURL サンプル** (ID: 1 のアニメに、ID: 1 のユーザーがレビューを投稿):
+    ```bash
+    curl -X POST http://localhost:3000/api/anime/1/reviews \
+    -H "Content-Type: application/json" \
+    -d '{
+      "rating": 5,
+      "comment": "最高でした！",
+      "userId": 1
+    }'
+    ```
+
+---
+
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
